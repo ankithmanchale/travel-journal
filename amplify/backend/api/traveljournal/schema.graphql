@@ -1,0 +1,12 @@
+type JournalEntry @model @auth(rules: [
+  { allow: public }, 
+  { allow: owner, ownerField: "owner", operations: [create, update, delete] }
+]) {
+  id: ID!
+  title: String!
+  content: String!
+  date: String! # Date entry creation date
+  tripDate: String! # Added field for trip date
+  imageUrl: String # Optional image URL
+  owner: String # Added owner field for access control
+}
