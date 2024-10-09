@@ -28,5 +28,35 @@
         "traveljournal": {}
       }
     }
+  },
+  "devv": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-traveljournal-devv-1cb68-authRole",
+      "UnauthRoleArn": "arn:aws:iam::010438473726:role/amplify-traveljournal-devv-1cb68-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::010438473726:role/amplify-traveljournal-devv-1cb68-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-traveljournal-devv-1cb68-deployment",
+      "UnauthRoleName": "amplify-traveljournal-devv-1cb68-unauthRole",
+      "StackName": "amplify-traveljournal-devv-1cb68",
+      "StackId": "arn:aws:cloudformation:us-east-1:010438473726:stack/amplify-traveljournal-devv-1cb68/fa3ad400-865b-11ef-b202-0afff61a3877",
+      "AmplifyAppId": "d7dlb2wt8ktzf"
+    },
+    "categories": {
+      "auth": {
+        "traveljournal7b9969ac": {}
+      },
+      "function": {
+        "S3Triggerf86a05af": {
+          "deploymentBucketName": "amplify-traveljournal-devv-1cb68-deployment",
+          "s3Key": "amplify-builds/S3Triggerf86a05af-36552b48344e76524646-build.zip"
+        }
+      },
+      "api": {
+        "traveljournal": {}
+      },
+      "storage": {
+        "s3619f6617": {}
+      }
+    }
   }
 }
