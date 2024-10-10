@@ -1,4 +1,3 @@
-// src/JournalEntries.js
 import React, { useEffect, useState } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { listJournalEntries } from './graphql/queries';
@@ -7,13 +6,12 @@ import './JournalEntries.css';
 
 const client = generateClient();
 
-const JournalEntries = ({ newEntry, user }) => {
+const JournalEntries = ({ newEntry, user, onEdit }) => {
   const [entries, setEntries] = useState([]);
 
   const fetchEntries = async () => {
     try {
       const entryData = await client.graphql({ query: listJournalEntries });
-      // Filter entries for the current user
       const userEntries = entryData.data.listJournalEntries.items.filter(entry => entry.owner === user.username);
       setEntries(userEntries);
     } catch (error) {
@@ -27,7 +25,16 @@ const JournalEntries = ({ newEntry, user }) => {
 
   useEffect(() => {
     if (newEntry) {
-      setEntries((prevEntries) => [newEntry, ...prevEntries]);
+      setEntries((prevEntries) => {
+        // Replace the entry if it's an update, otherwise add it
+        const entryIndex = prevEntries.findIndex((entry) => entry.id === newEntry.id);
+        if (entryIndex !== -1) {
+          const updatedEntries = [...prevEntries];
+          updatedEntries[entryIndex] = newEntry;
+          return updatedEntries;
+        }
+        return [newEntry, ...prevEntries];
+      });
     }
   }, [newEntry]);
 
@@ -37,7 +44,7 @@ const JournalEntries = ({ newEntry, user }) => {
         query: deleteJournalEntry,
         variables: { input: { id } },
       });
-      setEntries(entries.filter((entry) => entry.id !== id)); // Remove the deleted entry from state
+      setEntries(entries.filter((entry) => entry.id !== id));
     } catch (error) {
       console.error('Error deleting entry:', error);
     }
@@ -51,6 +58,7 @@ const JournalEntries = ({ newEntry, user }) => {
           <p>{entry.content}</p>
           <p className="entry-trip-date">Trip Date: {new Date(entry.tripDate).toLocaleDateString()}</p>
           <p className="entry-date">{new Date(entry.date).toLocaleString()}</p>
+          <button onClick={() => onEdit(entry)} className="edit-button">Edit</button>
           <button onClick={() => handleDelete(entry.id)} className="delete-button">Delete</button>
         </div>
       ))}

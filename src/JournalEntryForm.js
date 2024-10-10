@@ -1,44 +1,66 @@
 // src/JournalEntryForm.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
-import { createJournalEntry } from './graphql/mutations';
+import { createJournalEntry, updateJournalEntry } from './graphql/mutations';
 import './JournalEntryForm.css';
 
 const client = generateClient();
 
-const JournalEntryForm = ({ onNewEntry, user }) => { // Make sure to pass user prop
+const JournalEntryForm = ({ onNewEntry, user, editingEntry }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [tripDate, setTripDate] = useState(''); // State for trip date
+  const [tripDate, setTripDate] = useState('');
+
+  // Populate the form fields if editingEntry is set
+  useEffect(() => {
+    if (editingEntry) {
+      setTitle(editingEntry.title);
+      setContent(editingEntry.content);
+      setTripDate(editingEntry.tripDate);
+    } else {
+      // Clear the form if no editing entry is present
+      setTitle('');
+      setContent('');
+      setTripDate('');
+    }
+  }, [editingEntry]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     const journalEntry = {
       title,
       content,
       date: new Date().toISOString(),
-      tripDate, // Ensure this is set properly
-      owner: user?.username // Set the owner field (ensure user is defined)
+      tripDate,
+      owner: user?.username,
     };
-  
+
     try {
-      const result = await client.graphql({
-        query: createJournalEntry,
-        variables: { input: journalEntry },
-      });
-  
-      // Clear the form fields
+      if (editingEntry) {
+        // If editing, update the journal entry
+        const result = await client.graphql({
+          query: updateJournalEntry,
+          variables: { input: { id: editingEntry.id, ...journalEntry } },
+        });
+        onNewEntry(result.data.updateJournalEntry); // Notify parent with updated entry
+      } else {
+        // If not editing, create a new journal entry
+        const result = await client.graphql({
+          query: createJournalEntry,
+          variables: { input: journalEntry },
+        });
+        onNewEntry(result.data.createJournalEntry); // Notify parent with the new entry
+      }
+
+      // Clear the form fields after submit
       setTitle('');
       setContent('');
-      setTripDate(''); // Reset trip date
-      
-      // Notify the parent component about the new entry
-      onNewEntry(result.data.createJournalEntry); 
+      setTripDate('');
     } catch (error) {
-      console.error('Error creating journal entry: ', error);
+      console.error('Error submitting journal entry: ', error);
     }
-  };  
+  };
 
   return (
     <form onSubmit={handleSubmit} className="journal-entry-form">
@@ -65,7 +87,9 @@ const JournalEntryForm = ({ onNewEntry, user }) => { // Make sure to pass user p
         required
         className="form-input"
       />
-      <button type="submit" className="form-submit-button">Add Entry</button>
+      <button type="submit" className="form-submit-button">
+        {editingEntry ? 'Update Entry' : 'Add Entry'}
+      </button>
     </form>
   );
 };
